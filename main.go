@@ -2,8 +2,8 @@ package main
 
 import (
 	"errors"
-	"fmt"
 	"io/ioutil"
+	"log"
 	"os"
 
 	"github.com/ericaro/frontmatter"
@@ -15,7 +15,7 @@ import (
 
 const TokenFileName string = "~/.medium"
 
-type Option struct {
+type FrontmatterOption struct {
 	Title         string   `fm:"title"`
 	Tags          []string `fm:"tags"`
 	Content       string   `fm:"content"`
@@ -31,7 +31,7 @@ func main() {
 	}
 	app.HideVersion = true
 	app.Copyright = "MIT"
-	app.Usage = "Set your token to call Medium API, and publish your markdown file."
+	app.Usage = "Set your token to call a Medium API, and publish your markdown file."
 
 	app.Run(os.Args)
 }
@@ -53,7 +53,7 @@ func initCommand() cli.Command {
 				return err
 			}
 
-			fmt.Printf("Token was written into %s successfully.", filename)
+			log.Printf("Token was written into %s successfully.", filename)
 			return nil
 		},
 	}
@@ -63,7 +63,7 @@ func publishCommand() cli.Command {
 	return cli.Command{
 		Name:    "publish",
 		Aliases: []string{"p"},
-		Usage:   "Publish a markdown file to Medium with the status set to " + string(medium.PublishStatusDraft) + " and open the post editor page in the browser",
+		Usage:   "Publish a markdown file to Medium. And after the publishment, open the article page with a browser from a console.",
 		Action:  publish,
 	}
 }
@@ -80,10 +80,10 @@ func getAccessToken() (string, error) {
 	if err != nil && os.IsNotExist(err) {
 		err := open.Run("https://medium.com/me/settings")
 		if err != nil {
-			return "", errors.New("We tried to open your browser for you automatically, but for some reason it failed. Please manually browse to https://medium.com/me/settings, generate an integration token, and use the `md2mid init <token>` command to add it.")
+			return "", errors.New("Failed to open `https://medium.com/me/settings`")
 		}
 
-		return "", errors.New("Could not find the token. We have opened your browser for you. Please generate an integration token in your browser window, and use `md2mid init <token>` to add it.")
+		return "", errors.New("Failed to parse your token. Please `md2mid init` at first to initialize this tool's setting.")
 	}
 
 	// It's not a file not found error, so just return it
@@ -100,18 +100,18 @@ func parseOpts(filename string) (*medium.CreatePostOptions, error) {
 		return nil, err
 	}
 
-	opts := &Option{}
-	if err := frontmatter.Unmarshal(contents, opts); err != nil {
+	fmOpts := &FrontmatterOption{}
+	if err := frontmatter.Unmarshal(contents, fmOpts); err != nil {
 		return nil, err
 	}
 
 	postOpts := &medium.CreatePostOptions{
-		Title:         opts.Title,
+		Title:         fmOpts.Title,
 		ContentFormat: medium.ContentFormatMarkdown,
-		Content:       opts.Content,
-		Tags:          opts.Tags,
-		PublishStatus: medium.PublishStatus(opts.PublishStatus),
-		CanonicalURL:  opts.CanonicalURL,
+		Content:       fmOpts.Content,
+		Tags:          fmOpts.Tags,
+		PublishStatus: medium.PublishStatus(fmOpts.PublishStatus),
+		CanonicalURL:  fmOpts.CanonicalURL,
 	}
 
 	return postOpts, nil
@@ -129,7 +129,8 @@ func publish(c *cli.Context) error {
 	}
 
 	m := medium.NewClientWithAccessToken(accessToken)
-	userId, err := getMyId()
+
+	userId, err := getMyId(m)
 	if err != nil {
 		return err
 	}
@@ -140,19 +141,13 @@ func publish(c *cli.Context) error {
 		return err
 	}
 
-	fmt.Println("Post created. URL is ", post.URL)
+	log.Printf("Successfully generated your post! Check it out on %s", post.URL)
 	open.Run(post.URL)
 
 	return nil
 }
 
-func getMyId() (string, error) {
-	accessToken, err := getAccessToken()
-	if err != nil {
-		return "", err
-	}
-
-	m := medium.NewClientWithAccessToken(accessToken)
+func getMyId(m *medium.Medium) (string, error) {
 	me, err := m.GetUser("")
 	if err != nil {
 		return "", err
