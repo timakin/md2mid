@@ -48,12 +48,15 @@ func initCommand() cli.Command {
 			}
 
 			token := c.Args().First()
+			if token == "" {
+				return errors.New("Input your token as an arguement.")
+			}
 			err = ioutil.WriteFile(filename, []byte(token), 0644)
 			if err != nil {
 				return err
 			}
 
-			log.Printf("Token was written into %s successfully.", filename)
+			log.Printf("Successfully the token was saved into %s.", filename)
 			return nil
 		},
 	}
