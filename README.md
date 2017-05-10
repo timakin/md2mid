@@ -78,4 +78,4 @@ Unicode is supported. ☺
 Save this file with `publish` or `p` command.
 After that, console will open the page of an article.
 
-[![https://gyazo.com/afea668308ddcd84b26d94ad0fd012d5](https://i.gyazo.com/afea668308ddcd84b26d94ad0fd012d5.png)](https://gyazo.com/afea668308ddcd84b26d94ad0fd012d5)
+![sample](https://raw.githubusercontent.com/timakin/md2mid/images/sample.png)
