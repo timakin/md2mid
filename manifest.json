@@ -1,7 +1,0 @@
-{
-    "dependencies": {
-        "github.com/mitchellh/go-homedir": {
-            "branch": "master"
-        }
-    }
-}
