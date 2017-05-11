@@ -48,8 +48,8 @@ Publish an article with your local markdown file.
 ---
 title: Sample
 tags: [programming, engineer]
-publish_status: draft
-canonical_url: http://jamietalbot.com/posts/liverpool-fc
+publishstatus: draft
+canonicalurl: http://jamietalbot.com/posts/liverpool-fc
 ---
 
 Paragraphs are separated by a blank line.
