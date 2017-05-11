@@ -16,8 +16,8 @@ type FrontmatterOption struct {
 	Title         string   `fm:"title"`
 	Tags          []string `fm:"tags"`
 	Content       string   `fm:"content"`
-	PublishStatus string   `fm:"publish_status"`
-	CanonicalURL  string   `fm:"canonical_url"`
+	PublishStatus string   `fm:"publishstatus"`
+	CanonicalURL  string   `fm:"canonicalurl"`
 }
 
 const TokenFileName string = "~/.medium"
